@@ -202,17 +202,47 @@ export const createMarker = (map: any, markerData: any) => {
   // 인포윈도우 생성
   const infowindow = new window.kakao.maps.InfoWindow({
     position: markerPosition,
-    content: iwContent
+    content: iwContent,
+    removable: true // 닫기 버튼 표시
   });
+
+  // 현재 열린 인포윈도우 추적
+  let isOpen = false;
+
+  // 인포윈도우 닫기 함수
+  const closeInfoWindow = () => {
+    if (isOpen) {
+      infowindow.close();
+      isOpen = false;
+    }
+  };
+
+  // 인포윈도우 열기 함수
+  const openInfoWindow = () => {
+    if (!isOpen) {
+      infowindow.open(map, marker);
+      isOpen = true;
+    }
+  };
 
   // 마커에 마우스오버 이벤트를 등록
   window.kakao.maps.event.addListener(marker, 'mouseover', function() {
-    infowindow.open(map, marker);
+    openInfoWindow();
   });
 
   // 마커에 마우스아웃 이벤트를 등록
   window.kakao.maps.event.addListener(marker, 'mouseout', function() {
-    infowindow.close();
+    closeInfoWindow();
+  });
+
+  // 인포윈도우 닫기 이벤트를 등록
+  window.kakao.maps.event.addListener(infowindow, 'closeclick', function() {
+    isOpen = false;
+  });
+
+  // 지도 클릭 이벤트를 등록
+  window.kakao.maps.event.addListener(map, 'click', function() {
+    closeInfoWindow();
   });
 
   return marker;
