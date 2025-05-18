@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { loadKakaoMap } from '../utils/kakaoMap';
+import { createMarker, sampleMarkers } from '../utils/markers';
 
 declare global {
   interface Window {
@@ -10,6 +11,7 @@ declare global {
 const Map: React.FC = () => {
   const [map, setMap] = useState<any>(null);
   const [level, setLevel] = useState<number>(3);
+  const [markers, setMarkers] = useState<any[]>([]);
 
   useEffect(() => {
     const initMap = async () => {
@@ -26,6 +28,10 @@ const Map: React.FC = () => {
 
         const kakaoMap = new window.kakao.maps.Map(container, options);
         setMap(kakaoMap);
+
+        // 마커 생성
+        const newMarkers = sampleMarkers.map(markerData => createMarker(kakaoMap, markerData));
+        setMarkers(newMarkers);
       } catch (error) {
         console.error('Failed to initialize Kakao Map:', error);
       }
