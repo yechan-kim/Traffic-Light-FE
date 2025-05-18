@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { loadKakaoMap } from '../utils/kakaoMap';
-import { createMarker, sampleMarkers } from '../utils/markers';
+import { createMarker, getMarkers } from '../utils/markers';
 
 declare global {
   interface Window {
@@ -8,84 +8,57 @@ declare global {
   }
 }
 
-const Map: React.FC = () => {
+const Map = () => {
+  const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<any>(null);
-  const [level, setLevel] = useState<number>(3);
   const [markers, setMarkers] = useState<any[]>([]);
 
   useEffect(() => {
     const initMap = async () => {
       try {
         await loadKakaoMap();
-        
-        const container = document.getElementById('map');
-        if (!container) return;
+        if (mapRef.current) {
+          const options = {
+            center: new window.kakao.maps.LatLng(37.543268, 126.722697),
+            level: 3
+          };
+          const kakaoMap = new window.kakao.maps.Map(mapRef.current, options);
+          setMap(kakaoMap);
 
-        const options = {
-          center: new window.kakao.maps.LatLng(37.543268, 126.722697),
-          level: level
-        };
-
-        const kakaoMap = new window.kakao.maps.Map(container, options);
-        setMap(kakaoMap);
-
-        // 마커 생성
-        const newMarkers = sampleMarkers.map(markerData => createMarker(kakaoMap, markerData));
-        setMarkers(newMarkers);
+          // 마커 데이터 로드 및 생성
+          const markerData = await getMarkers();
+          const newMarkers = markerData.map(data => createMarker(kakaoMap, data));
+          setMarkers(newMarkers);
+        }
       } catch (error) {
-        console.error('Failed to initialize Kakao Map:', error);
+        console.error('Failed to initialize map:', error);
       }
     };
 
     initMap();
-  }, [level]);
+  }, []);
 
-  const handleZoomIn = () => {
-    if (map && level > 1) {
-      const newLevel = level - 1;
-      map.setLevel(newLevel);
-      setLevel(newLevel);
+  // 줌 인/아웃 함수
+  const zoomIn = () => {
+    if (map) {
+      const currentLevel = map.getLevel();
+      map.setLevel(currentLevel - 1);
     }
   };
 
-  const handleZoomOut = () => {
-    if (map && level < 14) {
-      const newLevel = level + 1;
-      map.setLevel(newLevel);
-      setLevel(newLevel);
+  const zoomOut = () => {
+    if (map) {
+      const currentLevel = map.getLevel();
+      map.setLevel(currentLevel + 1);
     }
   };
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
-      <div id="map" style={{ width: '100%', height: '100%' }}></div>
+      <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
       <div style={{ position: 'absolute', right: '20px', top: '20px', zIndex: 1 }}>
-        <button 
-          onClick={handleZoomIn}
-          style={{
-            padding: '10px 15px',
-            margin: '5px',
-            backgroundColor: 'white',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          +
-        </button>
-        <button 
-          onClick={handleZoomOut}
-          style={{
-            padding: '10px 15px',
-            margin: '5px',
-            backgroundColor: 'white',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          -
-        </button>
+        <button onClick={zoomIn} style={{ marginRight: '10px' }}>+</button>
+        <button onClick={zoomOut}>-</button>
       </div>
     </div>
   );
