@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { loadKakaoMap } from '../utils/kakaoMap';
 
 declare global {
   interface Window {
@@ -11,15 +12,27 @@ const Map: React.FC = () => {
   const [level, setLevel] = useState<number>(3);
 
   useEffect(() => {
-    const container = document.getElementById('map');
-    const options = {
-      center: new window.kakao.maps.LatLng(37.543268, 126.722697),
-      level: level
+    const initMap = async () => {
+      try {
+        await loadKakaoMap();
+        
+        const container = document.getElementById('map');
+        if (!container) return;
+
+        const options = {
+          center: new window.kakao.maps.LatLng(37.543268, 126.722697),
+          level: level
+        };
+
+        const kakaoMap = new window.kakao.maps.Map(container, options);
+        setMap(kakaoMap);
+      } catch (error) {
+        console.error('Failed to initialize Kakao Map:', error);
+      }
     };
 
-    const kakaoMap = new window.kakao.maps.Map(container, options);
-    setMap(kakaoMap);
-  }, []);
+    initMap();
+  }, [level]);
 
   const handleZoomIn = () => {
     if (map && level > 1) {
