@@ -18,7 +18,11 @@ export const createMarker = (map: any, markerData: any) => {
     <div style="padding:10px;min-width:150px;">
       <div style="font-size:14px;font-weight:bold;margin-bottom:5px;">${markerData.title}</div>
       <div style="font-size:12px;margin-bottom:3px;">
-        <span style="color:${markerData.status === 'OK' ? 'green' : 'red'}">●</span>
+        <span style="color:${
+          markerData.status === 'OK' ? 'green' : 
+          markerData.status === 'NO' ? 'red' : 
+          'gray'
+        }">●</span>
         현재 상태: ${markerData.status}
       </div>
       <div style="font-size:12px;">
@@ -59,14 +63,14 @@ export const sampleMarkers = [
     id: 5200,
     position: { lat: 	37.543696, lng: 126.719049 },
     title: '계산초교4',
-    status: 'OK',
+    status: 'NO',
     time: '10'
   },
   {
     id: 9714,
     position: { lat: 	37.543551, lng: 126.722376 },
     title: '계산3',
-    status: 'OK',
+    status: 'No Data',
     time: '10'
   },
   {
